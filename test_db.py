@@ -8,23 +8,6 @@ def main():
     db = get_db_adapter(config)
     db.connect()
 
-    # Create the certificates table with the new format
-    try:
-        db.execute('''CREATE TABLE IF NOT EXISTS certificates (
-            name TEXT,
-            department TEXT,
-            certification_date DATE,
-            trainer TEXT,
-            section TEXT,
-            bu TEXT,
-            email_id TEXT,
-            user_id TEXT
-        )''')
-    except Exception as e:
-        print(json.dumps({"error": f"Table creation error: {e}"}))
-        db.close()
-        return
-
     # Read certificate data from a JSON file (input.json) if it exists
     try:
         with open('input.json', 'r') as f:

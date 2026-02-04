@@ -1,0 +1,15 @@
+[
+  {
+    "table": "certificates",
+    "columns": [
+      {"name": "name", "type": "TEXT"},
+      {"name": "department", "type": "TEXT"},
+      {"name": "certification_date", "type": "DATE"},
+      {"name": "trainer", "type": "TEXT"},
+      {"name": "section", "type": "TEXT"},
+      {"name": "bu", "type": "TEXT"},
+      {"name": "email_id", "type": "TEXT"},
+      {"name": "user_id", "type": "TEXT"}
+    ]
+  }
+]
