@@ -12,6 +12,10 @@ class SQLiteAdapter(DatabaseInterface):
         self.conn = sqlite3.connect(self.db_path)
         self.conn.row_factory = sqlite3.Row
         self.cursor = self.conn.cursor()
+    
+    def execute(self, query, params=None):
+        self.cursor.execute(query, params or ())
+        self.conn.commit()
 
     def create(self, table: str, data: Dict[str, Any]) -> Any:
         keys = ', '.join(data.keys())

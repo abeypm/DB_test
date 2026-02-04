@@ -5,6 +5,10 @@ class DatabaseInterface(ABC):
     @abstractmethod
     def connect(self):
         pass
+        
+    @abstractmethod
+    def execute(self, query: str, params=None):
+        pass
 
     @abstractmethod
     def create(self, table: str, data: Dict[str, Any]) -> Any:

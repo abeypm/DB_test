@@ -1,45 +1,71 @@
+import json
 from db_factory import get_db_adapter
+from config_loader import load_env
 
-# Uncomment and configure for SQLite
-# config = {
-#     'type': 'sqlite',
-#     'db_path': 'test.db'
-# }
+def main():
+    # Load DB config from environment variables
+    config = load_env()
+    db = get_db_adapter(config)
+    db.connect()
 
-# Uncomment and configure for PostgreSQL
-# Example DSN: "dbname=test user=postgres password=secret host=localhost port=5432"
-config = {
-    'type': 'postgres',
-    'dsn': 'your_postgres_dsn_here'
-}
+    # Create the certificates table with the new format
+    try:
+        db.execute('''CREATE TABLE IF NOT EXISTS certificates (
+            name TEXT,
+            department TEXT,
+            certification_date DATE,
+            trainer TEXT,
+            section TEXT,
+            bu TEXT,
+            email_id TEXT,
+            user_id TEXT
+        )''')
+    except Exception as e:
+        print(json.dumps({"error": f"Table creation error: {e}"}))
+        db.close()
+        return
 
-db = get_db_adapter(config)
-db.connect()
+    # Read certificate data from a JSON file (input.json) if it exists
+    try:
+        with open('input.json', 'r') as f:
+            certificate_data = json.load(f)
+        cert_id = db.create('certificates', certificate_data)
+        print(json.dumps({"inserted": certificate_data}))
+    except FileNotFoundError:
+        print(json.dumps({"info": "No input.json file found. Skipping insert."}))
+    except Exception as e:
+        print(json.dumps({"error": f"Insert error: {e}"}))
 
-# Create a test table
-try:
-    db.execute('''CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        name TEXT,
-        age INTEGER
-    )''')
-except Exception as e:
-    print(f"Table creation error: {e}")
+    # Read all certificate records and output as JSON
+    try:
+        certs = db.read('certificates')
+        print(json.dumps({"certificates": certs}, default=str))
+    except Exception as e:
+        print(json.dumps({"error": f"Read error: {e}"}))
 
-# Test CREATE
-user_id = db.create('users', {'name': 'Alice', 'age': 30})
-print(f"Inserted user with id: {user_id}")
+    # Example: Update a certificate record from update.json if it exists
+    try:
+        with open('update.json', 'r') as f:
+            update_info = json.load(f)
+        db.update('certificates', update_info['criteria'], update_info['data'])
+        print(json.dumps({"updated": update_info}))
+    except FileNotFoundError:
+        print(json.dumps({"info": "No update.json file found. Skipping update."}))
+    except Exception as e:
+        print(json.dumps({"error": f"Update error: {e}"}))
 
-# Test READ
-users = db.read('users')
-print("Users:", users)
+    # Example: Delete a certificate record from delete.json if it exists
+    try:
+        with open('delete.json', 'r') as f:
+            delete_criteria = json.load(f)
+        db.delete('certificates', delete_criteria)
+        print(json.dumps({"deleted": delete_criteria}))
+    except FileNotFoundError:
+        print(json.dumps({"info": "No delete.json file found. Skipping delete."}))
+    except Exception as e:
+        print(json.dumps({"error": f"Delete error: {e}"}))
 
-# Test UPDATE
-updated = db.update('users', {'id': user_id}, {'age': 31})
-print(f"Rows updated: {updated}")
+    db.close()
 
-# Test DELETE
-deleted = db.delete('users', {'id': user_id})
-print(f"Rows deleted: {deleted}")
-
-db.close()
+if __name__ == "__main__":
+    main()

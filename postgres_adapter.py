@@ -12,13 +12,17 @@ class PostgresAdapter(DatabaseInterface):
         self.conn = psycopg2.connect(self.dsn)
         self.cursor = self.conn.cursor()
 
+    def execute(self, query, params=None):
+        self.cursor.execute(query, params or ())
+        self.conn.commit()
+
     def create(self, table: str, data: Dict[str, Any]) -> Any:
         keys = ', '.join(data.keys())
         placeholders = ', '.join(['%s' for _ in data])
-        sql = f"INSERT INTO {table} ({keys}) VALUES ({placeholders}) RETURNING id"
+        sql = f"INSERT INTO {table} ({keys}) VALUES ({placeholders})"
         self.cursor.execute(sql, tuple(data.values()))
         self.conn.commit()
-        return self.cursor.fetchone()[0]
+        return None
 
     def read(self, table: str, criteria: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
         sql = f"SELECT * FROM {table}"
