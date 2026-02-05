@@ -28,7 +28,5 @@ This project implements a generic, extensible database interface in Python, supp
   from db_factory import get_db_adapter
   from config_loader import load_env
   config = load_env()
-  db = get_db_adapter(config)
-  db.connect()
+  with get_db_adapter(config) as db:
   # Use db.create, db.read, db.update, db.delete
-  db.close()
